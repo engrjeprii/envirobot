@@ -40,7 +40,7 @@ const LoginPage: React.FC = () => {
         <input
           type="text"
           placeholder="Username"
-          className="w-full p-2 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+          className="w-full p-2 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 text-black"
           onChange={(e) =>
             setCredentials({ ...credentials, username: e.target.value })
           }
@@ -49,7 +49,7 @@ const LoginPage: React.FC = () => {
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Password"
-            className="w-full p-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full p-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 text-black"
             onKeyDown={(e) => e.key === "Enter" && handleLogin()}
             onChange={(e) =>
               setCredentials({ ...credentials, password: e.target.value })
