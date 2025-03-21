@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { RotateCcw } from "lucide-react";
 
 interface ControlsProps {
   isConnected: boolean;
@@ -12,8 +13,88 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
     { label: "Camera 3", value: "camera3" },
   ];
   const [selectedCamera, setSelectedCamera] = useState(cameraOptions[0]);
-  const [abortController, setAbortController] =
-    useState<AbortController | null>(null);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
+
+  const [sensorError, setSensorError] = useState(false);
+  const [sensorLevel, setSensorLevel] = useState(0);
+
+  const [keyboardLogs, setKeyboardLogs] = useState<string[]>([]);
+
+  const fetchArduinoData = async () => {
+    setSensorError(false);
+    setSensorLevel(0);
+    try {
+      const response = await fetch("/api/proxy?type=arduino");
+      const data = await response.json();
+
+      if (response.ok) {
+        setSensorError(false);
+        return console.log("Arduino Data:", data);
+      }
+      setSensorError(true);
+    } catch (error) {
+      console.error("Error fetching Arduino data:", error);
+      setSensorError(true);
+    }
+  };
+
+  const sendMoveCommand = async (movement: string) => {
+    try {
+      const response = await fetch(`/api/proxy?direction=${movement}`, {
+        method: "POST",
+      });
+      const data = await response.json();
+      console.log(`Move ${movement} response:`, data);
+    } catch (error) {
+      console.error("Error moving:", error);
+    }
+  };
+
+  const formatDirectionToLogs = (keyPress: string) => {
+    const keyToDirection: { [key: string]: string } = {
+      a: "Left",
+      d: "Right",
+      w: "Forward",
+      s: "Stopping Device",
+      q: "Manual Switching of Conveyor Motor",
+    };
+
+    return `[Pressed ${keyPress}]: ${
+      keyToDirection[keyPress] ?? "Invalid Keypress"
+    } `;
+  };
+
+  const handleKeyDown = useCallback(async (event: KeyboardEvent) => {
+    const keyToDirection: { [key: string]: string } = {
+      a: "a",
+      A: "a",
+      ArrowLeft: "a",
+      d: "d",
+      D: "d",
+      ArrowRight: "d",
+      w: "w",
+      W: "w",
+      ArrowUp: "w",
+      s: "s",
+      S: "s",
+      ArrowDown: "s",
+      q: "q",
+      Q: "q",
+    };
+
+    const direction = keyToDirection[event.key as keyof typeof keyToDirection];
+
+    setKeyboardLogs((prevLogs) => {
+      const newLogs = [...prevLogs];
+      newLogs.push(formatDirectionToLogs(event.key));
+      return newLogs;
+    });
+    if (direction) {
+      sendMoveCommand(direction).then();
+    }
+  }, []);
+
+  console.log("keyboardLogs", keyboardLogs);
 
   useEffect(() => {
     if (!isConnected) return;
@@ -51,47 +132,144 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
     return () => newController.abort();
   }, [selectedCamera, isConnected]);
 
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
   // ❗ Stop requests when the user logs out
   useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isConnected) {
+      fetchArduinoData().then();
+      interval = setInterval(() => {
+        fetchArduinoData().then();
+      }, 180000);
+    }
+
     return () => {
-      console.log("Component unmounting, stopping all streams...");
+      if (interval) clearInterval(interval);
       abortController?.abort();
+      setKeyboardLogs([]);
+      setSelectedCamera(cameraOptions[0]);
+      setVideoUrl("");
+      setSensorError(false);
+      setSensorLevel(0);
     };
-  }, []);
+  }, [isConnected]);
+
   if (!isConnected) return null;
 
   return (
-    <div className="w-full max-w-2xl bg-white p-6 rounded-xl shadow-lg">
-      <div className="flex justify-between items-center mb-4">
-        <label className="font-medium text-gray-700">Select Camera:</label>
-        <select
-          value={selectedCamera.label}
-          onChange={(e) => {
-            const cameraSelected = cameraOptions.find(
-              (camera) => camera.label === e.target.value
-            );
-            if (cameraSelected) {
-              setSelectedCamera(cameraSelected);
-            }
-          }}
-          className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
-        >
-          {cameraOptions.map(({ value, label }, index) => (
-            <option key={`${value}_${index}`} value={label} className="p-2">
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="bg-black rounded-lg overflow-hidden border-4 border-gray-300">
-        {videoUrl && (
+    <div className="h-screen grid grid-cols-[3fr_1fr] gap-6 p-6">
+      {/* Camera Section (Left) */}
+      <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col h-full gap-2">
+        <div className="flex justify-between items-center mb-4">
+          <label className="font-medium text-gray-700">Select Camera:</label>
+          <select
+            value={selectedCamera.label}
+            onChange={(e) => {
+              const cameraSelected = cameraOptions.find(
+                (camera) => camera.label === e.target.value
+              );
+              if (cameraSelected) {
+                setSelectedCamera(cameraSelected);
+                setKeyboardLogs((prevLogs) => {
+                  const newLogs = [...prevLogs];
+                  newLogs.push(
+                    `[Camera Change]: Switched to ${cameraSelected.label}`
+                  );
+                  return newLogs;
+                });
+              }
+            }}
+            className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 text-black"
+          >
+            {cameraOptions.map(({ value, label }, index) => (
+              <option key={`${value}_${index}`} value={label} className="p-2">
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="h-[80%] bg-black rounded-lg overflow-hidden border-4 border-gray-300">
           <img
             key={videoUrl}
             src={videoUrl}
             alt={`Stream from ${selectedCamera.label}`}
-            className="w-full h-72 object-cover rounded-lg"
+            className="w-full h-full object-cover rounded-lg"
           />
-        )}
+        </div>
+
+        {/* Instructions  */}
+        <div className="p-2 bg-white rounded-lg border-2 border-gray-300">
+          <h2 className="text-m font-bold text-black">INSTRUCTIONS:</h2>
+          <ul className="list-disc list-inside grid grid-rows-4 grid-flow-col gap-x-4 text-sm text-gray-700">
+            <li>Use the dropdown to select a camera</li>
+            <li>{`Press W or w to forward the device`}</li>
+            <li>{`Press S or s to stop the device`}</li>
+            <li>{`Press A or a to turn left`}</li>
+            <li>{`Press D or d to turn right`}</li>
+            <li>{`Press Q or q to manually stop the conveyor motor.`}</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Sensor & Logs Section (Right) */}
+      <div className="grid grid-rows-[40%_60%] gap-4">
+        <div className="bg-white rounded-lg flex flex-col items-center p-2 w-full h-full">
+          <h2 className="text-[#445749] font-bold">ULTRASONIC SENSOR</h2>
+          <div className="flex-1 w-full flex items-center justify-center">
+            <div className="w-full h-full grid grid-rows-4 gap-1 border-2 border-gray-700 rounded-md p-1">
+              {[...Array(4)].map((_, index) => {
+                const level = 4 - index; // Levels: 4 (top) to 1 (bottom)
+                return (
+                  <div
+                    key={level}
+                    className={`w-full h-full rounded-sm ${
+                      sensorLevel >= level
+                        ? level >= 3
+                          ? "bg-green-500"
+                          : level === 2
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
+                        : "bg-gray-300"
+                    }`}
+                  ></div>
+                );
+              })}
+            </div>
+          </div>
+          {sensorError && (
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-red-500">
+                Error fetching sensor data
+              </p>
+              <button
+                className="text-red-500 hover:text-red-700 cursor-pointer"
+                onClick={() => fetchArduinoData()}
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="bg-white rounded-lg border-2 border-gray-700 p-2 h-full overflow-auto">
+          <h3 className="text-sm font-bold text-gray-800 mb-2">
+            Keyboard Logs
+          </h3>
+          <div className="flex flex-col items-start">
+            {keyboardLogs.length > 0 ? (
+              keyboardLogs.map((log, index) => (
+                <p key={index} className="text-sm text-gray-700">
+                  {log}
+                </p>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 italic">No logs yet...</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

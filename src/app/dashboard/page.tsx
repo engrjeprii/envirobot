@@ -8,24 +8,26 @@ import Controls from "./Controls";
 
 const DashboardPage = () => {
   const [isConnected, setIsConnected] = useState(false);
-
   const router = useRouter();
+
   const handleLogout = () => {
-    setIsConnected(false); // Ensure isConnected is set to false
+    setIsConnected(false);
     router.replace("/login");
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-b from-blue-500 to-green-500">
-      <div className="absolute top-4 right-4 bg-white p-2 rounded-lg shadow-lg">
+    <div className="relative flex flex-col h-screen bg-gradient-to-b from-blue-500 to-green-500 pt-16">
+      {/* Logout Button (Fixed at Top-Right) */}
+      <div className="absolute top-4 right-6 z-10">
         <button
           onClick={handleLogout}
-          className="font-semibold cursor-pointer text-black"
+          className="bg-white p-2 rounded-lg shadow-lg font-semibold cursor-pointer text-black w-24 hover:bg-gray-200 transition"
         >
           Logout
         </button>
       </div>
 
+      {/* Add padding to avoid overlap */}
       {!isConnected ? (
         <Connect isConnected={isConnected} setIsConnected={setIsConnected} />
       ) : (

@@ -1,15 +1,15 @@
-const fetchWithRetry = async (url, options, retries = 3) => {
+const fetchWithRetry = async (url, options, retries = 3, allowRetry = true) => {
   try {
     const response = await fetch(url, options);
-    if (!response.ok && retries > 0) {
+    if (!response.ok && retries > 0 && allowRetry) {
       console.warn(`Retrying... (${retries} attempts left)`);
-      return fetchWithRetry(url, options, retries - 1);
+      return fetchWithRetry(url, options, retries - 1, allowRetry);
     }
     return response;
   } catch (error) {
-    if (retries > 0) {
+    if (retries > 0 && allowRetry) {
       console.warn(`Retrying... (${retries} attempts left)`);
-      return fetchWithRetry(url, options, retries - 1);
+      return fetchWithRetry(url, options, retries - 1, allowRetry);
     }
     throw error;
   }
@@ -34,12 +34,17 @@ export async function GET(req) {
   const contentType = (type === "arduino" || type === 'connect') ? "application/json" : "application/octet-stream";
 
   try {
+    const allowRetry = type !== "arduino";
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const response = await fetchWithRetry(raspiUrl, {
       headers: {
         "Content-Type": contentType,
       },
+      signal,
       timeout: 5000, // Set a timeout of 5 seconds
-    });
+    }, 3, allowRetry);
 
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.status}`);
@@ -78,9 +83,13 @@ export async function POST(req) {
 
     const flaskApiUrl = `https://immune-crow-vastly.ngrok-free.app/move/${direction}`;
 
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const response = await fetchWithRetry(flaskApiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal,
       timeout: 5000, // Set a timeout of 5 seconds
     });
 

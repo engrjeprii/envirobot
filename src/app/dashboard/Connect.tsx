@@ -54,7 +54,7 @@ const Connect: React.FC<ConnectProps> = ({ isConnected, setIsConnected }) => {
   if (isConnected) return null;
 
   return (
-    <div className="flex flex-col items-center gap-6 flex-[0.75]">
+    <div className="flex flex-col h-screen justify-center items-center gap-6">
       <p>
         Web app is still not connected to the device. Please connect the device
         to start.
