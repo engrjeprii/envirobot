@@ -30,7 +30,7 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
     if (distance >= 27) return 1;
     if (distance >= 24) return 2;
     if (distance >= 22) return 3;
-    if (distance >= 19) return 4;
+    if (distance >= 0) return 4;
     return 0;
   };
 
