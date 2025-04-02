@@ -143,7 +143,7 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
       }
     };
 
-    fetchVideoUrl();
+    // fetchVideoUrl();
 
     return () => newController.abort();
   }, [selectedCamera, isConnected]);
@@ -202,14 +202,14 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
           </select>
         </div>
         <div className="h-[80%] bg-black rounded-lg overflow-hidden border-4 border-gray-300">
-          {/* {videoUrl && (
+          {videoUrl && (
             <img
               key={videoUrl}
               src={videoUrl}
               alt={`Stream from ${selectedCamera.label}`}
               className="w-full h-full object-cover rounded-lg"
             />
-          )} */}
+          )}
         </div>
       </div>
 
