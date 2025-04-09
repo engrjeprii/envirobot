@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { RotateCcw } from "lucide-react";
-import { isMobile } from "react-device-detect";
+import { isMobile, MobileView } from "react-device-detect";
 
 interface ControlsProps {
   isConnected: boolean;
@@ -173,7 +173,9 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
 
   // if (!isMobile) {
   return (
-    <div className="h-screen grid grid-cols-[2fr_100fr_60px] gap-2 p-4">
+    <MobileView>
+      
+    <div className="h-screen grid grid-cols-[1fr_4fr_60px] gap-2 p-4">
       <div className="flex flex-col">
         <div className="bg-white rounded-lg border-2 border-gray-700 p-2 h-full overflow-auto">
           <h3 className="text-sm font-bold text-gray-800 mb-2">
@@ -192,12 +194,13 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 grid-rows-3 place-items-center w-20 h-1/2">
-        <div></div>
+        {/* Controls */}
+        <div className="grid grid-cols-3 grid-rows-3 place-items-center w-full h-1/2">
+          <div></div>
           {/* Forward  */}
           <button
             onClick={() => {}}
-            className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
+            className="w-9 h-9 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
           >
             <span className="text-red-500 text-xl">↑</span>
           </button>
@@ -205,15 +208,15 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
           {/* Left */}
           <button
             onClick={() => {}}
-            className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
+            className="w-9 h-9 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
           >
             <span className="text-red-500 text-xl">←</span>
           </button>
-          <div className="bg-gray-400 rounded-full w-8 h-8"></div>
+          <div className="bg-gray-400 rounded-full w-9 h-9"></div>
           {/* Right  */}
           <button
             onClick={() => {}}
-            className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
+            className="w-9 h-9 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
           >
             <span className="text-red-500 text-xl">→</span>
           </button>
@@ -221,7 +224,7 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
           <div></div>
           <button
             onClick={() => {}}
-            className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
+            className="w-9 h-9 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition"
           >
             <span className="text-red-500 text-xl">↓</span>
           </button>
@@ -311,6 +314,7 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
         </div>
       </div>
     </div>
+    </MobileView>
   );
 
   // return (
