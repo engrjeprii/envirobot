@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { RotateCcw } from "lucide-react";
-import { isMobile, MobileView } from "react-device-detect";
+import { isMobile,  } from "react-device-detect";
 import "./scrollbar.css";
 
 interface ControlsProps {
@@ -11,7 +11,7 @@ interface ControlsProps {
 
 const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
   const [isLandscape, setIsLandscape] = useState(
-    window.matchMedia("(orientation: landscape)").matches
+    false
   );
 
   const logsContainerRef = useRef<HTMLDivElement>(null);
@@ -179,6 +179,9 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
   }, [isConnected]);
 
   useEffect(() => {
+
+    if (typeof window === 'undefined') return;
+    
     const mediaQuery = window.matchMedia("(orientation: landscape)");
     const handleChange = (e: any) => setIsLandscape(e.matches);
 
