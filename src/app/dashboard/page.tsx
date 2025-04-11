@@ -28,14 +28,11 @@ const DashboardPage = () => {
       </div>
 
       {/* Add padding to avoid overlap */}
-      {/* {!isConnected ? (
+      {!isConnected ? (
         <Connect isConnected={isConnected} setIsConnected={setIsConnected} />
       ) : (
         <Controls isConnected={isConnected} />
-      )} */}
-
-<Controls isConnected={isConnected} />
-
+      )}
     </div>
   );
 };

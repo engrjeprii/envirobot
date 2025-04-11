@@ -151,7 +151,7 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
       }
     };
 
-    // fetchVideoUrl();
+    fetchVideoUrl();
 
     return () => newController.abort();
   }, [selectedCamera, isConnected]);
@@ -199,7 +199,7 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
     }
   }, [keyboardLogs]); // Trigger whenever keyboardLogs updates
 
-  // if (!isConnected) return null;
+  if (!isConnected) return null;
 
   if (isMobile) { 
     return (
@@ -385,8 +385,6 @@ const Controls: React.FC<ControlsProps> = ({ isConnected }) => {
     );
   
   }
-
-
  
   return (
     <div className="h-screen grid grid-cols-[3fr_1fr] gap-6 p-6">
